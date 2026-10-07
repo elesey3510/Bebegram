@@ -47,8 +47,8 @@ jobs:
       - name: Create dummy configuration
         run: |
           cat << 'EOF' > local.properties
-          apiId=6
-          apiHash=eb06628b0821c61b183386044f0f0d3b
+          apiId=${{ secrets.API_ID }}
+          apiHash=${{ secrets.API_HASH }}
           helperBotId=0
           helperBotUsername=dummy
           sentryDsn=https://dummy@dummy.ingest.sentry.io/0
