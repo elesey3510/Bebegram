@@ -43,9 +43,25 @@ jobs:
 
       - name: Create dummy configuration
         run: |
-          touch local.properties
+          cat << 'EOF' > local.properties
+          apiId=6
+          apiHash=eb06628b0821c61b183386044f0f0d3b
+          helperBotId=0
+          helperBotUsername=dummy
+          sentryDsn=https://dummy@dummy.ingest.sentry.io/0
+          mapsApiKey=AIzaSyDummyKeyForBuildValidation12345
+          EOF
+
           mkdir -p TMessagesProj_App
-          echo '{}' > TMessagesProj_App/google-services.json
+          cat << 'EOF' > TMessagesProj_App/google-services.json
+          {
+            "project_info": { "project_number": "0", "project_id": "dummy" },
+            "client": [{
+              "client_info": { "mobilesdk_app_id": "1:0:android:0", "android_client_info": { "package_name": "tw.nekomimi.nekogram" } },
+              "api_key": [{ "current_key": "dummy" }]
+            }]
+          }
+          EOF
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug --stacktrace
