@@ -94,3 +94,10 @@ jobs:
             **/*.apk
             TMessagesProj_App/build/outputs/
           if-no-files-found: warn
+      - name: Send Discord Notification
+        if: always()
+        uses: IlshatR/discord-webhook-action@v1.2.3
+        with:
+          url: ${{ secrets.DISCORD_WEBHOOK }}
+          color: ${{ job.status == 'success' && 3066993 || 15158332 }}
+          title: "${{ job.status }}"
