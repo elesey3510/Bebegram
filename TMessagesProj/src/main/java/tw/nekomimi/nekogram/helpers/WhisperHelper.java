@@ -245,8 +245,6 @@ public class WhisperHelper {
             // Отключаем размышления и фантазии ради мгновенной скорости (1-2 сек)
             payload.generationConfig = new GeminiRequest.GenerationConfig();
             payload.generationConfig.temperature = 0.0;
-            payload.generationConfig.thinkingConfig = new GeminiRequest.ThinkingConfig();
-            payload.generationConfig.thinkingConfig.thinkingBudget = 0;
 
             var client = getOkHttpClient();
             var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + NekoConfig.cfApiToken;
