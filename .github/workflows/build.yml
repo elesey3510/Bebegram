@@ -56,10 +56,20 @@ jobs:
           cat << 'EOF' > TMessagesProj_App/google-services.json
           {
             "project_info": { "project_number": "0", "project_id": "dummy" },
-            "client": [{
-              "client_info": { "mobilesdk_app_id": "1:0:android:0", "android_client_info": { "package_name": "tw.nekomimi.nekogram" } },
-              "api_key": [{ "current_key": "dummy" }]
-            }]
+            "client": [
+              {
+                "client_info": { "mobilesdk_app_id": "1:0:android:0", "android_client_info": { "package_name": "tw.nekomimi.nekogram" } },
+                "api_key": [{ "current_key": "dummy" }]
+              },
+              {
+                "client_info": { "mobilesdk_app_id": "1:0:android:1", "android_client_info": { "package_name": "tw.nekomimi.nekogram.beta" } },
+                "api_key": [{ "current_key": "dummy" }]
+              },
+              {
+                "client_info": { "mobilesdk_app_id": "1:0:android:2", "android_client_info": { "package_name": "tw.nekomimi.nekogram.debug" } },
+                "api_key": [{ "current_key": "dummy" }]
+              }
+            ]
           }
           EOF
 
