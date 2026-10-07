@@ -37,6 +37,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -76,60 +78,34 @@ public class WhisperHelper {
         var resourcesProvider = fragment.getResourceProvider();
         var context = fragment.getParentActivity();
         var builder = new AlertDialog.Builder(context, resourcesProvider);
-        builder.setTitle(LocaleController.getString(R.string.CloudflareCredentials));
-        builder.setMessage(AndroidUtilities.replaceSingleTag(LocaleController.getString(R.string.CloudflareCredentialsDialog),
-                -1,
-                AndroidUtilities.REPLACING_TAG_TYPE_LINKBOLD,
-                () -> Browser.openUrl(context, "https://nekogram.app/cloudflare-credentials"),
-                resourcesProvider));
+        builder.setTitle("Google Gemini API");
+        builder.setMessage("Введите API ключ, полученный в Google AI Studio (aistudio.google.com)");
         builder.setCustomViewOffset(0);
 
         var ll = new LinearLayout(context);
         ll.setOrientation(LinearLayout.VERTICAL);
 
-        var editTextAccountId = new EditTextBoldCursor(context) {
+        var editTextApiKey = new EditTextBoldCursor(context) {
             @Override
             protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                 super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64), MeasureSpec.EXACTLY));
             }
         };
-        editTextAccountId.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        editTextAccountId.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
-        editTextAccountId.setText(NekoConfig.cfAccountID);
-        editTextAccountId.setHintText(LocaleController.getString(R.string.CloudflareAccountID));
-        editTextAccountId.setHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        editTextAccountId.setHeaderHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader, resourcesProvider));
-        editTextAccountId.setSingleLine(true);
-        editTextAccountId.setFocusable(true);
-        editTextAccountId.setTransformHintToHeader(true);
-        editTextAccountId.setLineColors(Theme.getColor(Theme.key_windowBackgroundWhiteInputField, resourcesProvider), Theme.getColor(Theme.key_windowBackgroundWhiteInputFieldActivated, resourcesProvider), Theme.getColor(Theme.key_text_RedRegular, resourcesProvider));
-        editTextAccountId.setImeOptions(EditorInfo.IME_ACTION_NEXT);
-        editTextAccountId.setBackground(null);
-        editTextAccountId.requestFocus();
-        editTextAccountId.setPadding(0, 0, 0, 0);
-        ll.addView(editTextAccountId, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 24, 0));
-
-        var editTextApiToken = new EditTextBoldCursor(context) {
-            @Override
-            protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                super.onMeasure(widthMeasureSpec, MeasureSpec.makeMeasureSpec(AndroidUtilities.dp(64), MeasureSpec.EXACTLY));
-            }
-        };
-        editTextApiToken.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
-        editTextApiToken.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
-        editTextApiToken.setText(NekoConfig.cfApiToken);
-        editTextApiToken.setHintText(LocaleController.getString(R.string.CloudflareAPIToken));
-        editTextApiToken.setHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
-        editTextApiToken.setHeaderHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader, resourcesProvider));
-        editTextApiToken.setSingleLine(true);
-        editTextApiToken.setFocusable(true);
-        editTextApiToken.setTransformHintToHeader(true);
-        editTextApiToken.setLineColors(Theme.getColor(Theme.key_windowBackgroundWhiteInputField, resourcesProvider), Theme.getColor(Theme.key_windowBackgroundWhiteInputFieldActivated, resourcesProvider), Theme.getColor(Theme.key_text_RedRegular, resourcesProvider));
-        editTextApiToken.setImeOptions(EditorInfo.IME_ACTION_DONE);
-        editTextApiToken.setBackground(null);
-        editTextApiToken.requestFocus();
-        editTextApiToken.setPadding(0, 0, 0, 0);
-        ll.addView(editTextApiToken, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 24, 0));
+        editTextApiKey.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
+        editTextApiKey.setTextColor(Theme.getColor(Theme.key_dialogTextBlack, resourcesProvider));
+        editTextApiKey.setText(NekoConfig.cfApiToken);
+        editTextApiKey.setHintText("Gemini API Key");
+        editTextApiKey.setHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteHintText));
+        editTextApiKey.setHeaderHintColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader, resourcesProvider));
+        editTextApiKey.setSingleLine(true);
+        editTextApiKey.setFocusable(true);
+        editTextApiKey.setTransformHintToHeader(true);
+        editTextApiKey.setLineColors(Theme.getColor(Theme.key_windowBackgroundWhiteInputField, resourcesProvider), Theme.getColor(Theme.key_windowBackgroundWhiteInputFieldActivated, resourcesProvider), Theme.getColor(Theme.key_text_RedRegular, resourcesProvider));
+        editTextApiKey.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        editTextApiKey.setBackground(null);
+        editTextApiKey.requestFocus();
+        editTextApiKey.setPadding(0, 0, 0, 0);
+        ll.addView(editTextApiKey, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, 36, 0, 24, 0, 24, 0));
 
         builder.setView(ll);
         builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
@@ -139,20 +115,13 @@ public class WhisperHelper {
         var button = dialog.getButton(AlertDialog.BUTTON_POSITIVE);
         if (button != null) {
             button.setOnClickListener(v -> {
-                var accountId = editTextAccountId.getText();
-                if (!TextUtils.isEmpty(accountId) && accountId.length() != 32) {
-                    AndroidUtilities.shakeViewSpring(editTextAccountId, -6);
+                var apiKey = editTextApiKey.getText();
+                if (TextUtils.isEmpty(apiKey)) {
+                    AndroidUtilities.shakeViewSpring(editTextApiKey, -6);
                     BotWebViewVibrationEffect.APP_ERROR.vibrate();
                     return;
                 }
-                var apiToken = editTextApiToken.getText();
-                if (!TextUtils.isEmpty(apiToken) && apiToken.length() < 40) {
-                    AndroidUtilities.shakeViewSpring(editTextApiToken, -6);
-                    BotWebViewVibrationEffect.APP_ERROR.vibrate();
-                    return;
-                }
-                NekoConfig.setCfAccountID(accountId == null ? "" : accountId.toString());
-                NekoConfig.setCfApiToken(apiToken == null ? "" : apiToken.toString());
+                NekoConfig.setCfApiToken(apiKey.toString().trim());
                 dialog.dismiss();
             });
         }
@@ -227,12 +196,13 @@ public class WhisperHelper {
     }
 
     public static void requestWorkersAi(String path, boolean video, BiConsumer<String, Exception> callback) {
-        if (TextUtils.isEmpty(NekoConfig.cfAccountID) || TextUtils.isEmpty(NekoConfig.cfApiToken)) {
-            callback.accept(null, new Exception(LocaleController.getString(R.string.CloudflareCredentialsNotSet)));
+        if (TextUtils.isEmpty(NekoConfig.cfApiToken)) {
+            callback.accept(null, new Exception("Gemini API key is not set. Please set it in Settings."));
             return;
         }
         executorService.submit(() -> {
             File audioPath;
+            String mimeType;
             if (video) {
                 var audioFile = new File(path + ".m4a");
                 try {
@@ -241,9 +211,12 @@ public class WhisperHelper {
                     FileLog.e(e);
                 }
                 audioPath = audioFile.exists() ? audioFile : new File(path);
+                mimeType = "audio/mp4";
             } else {
                 audioPath = new File(path);
+                mimeType = "audio/ogg";
             }
+
             byte[] audio;
             try {
                 audio = Files.readAllBytes(audioPath.toPath());
@@ -251,22 +224,48 @@ public class WhisperHelper {
                 callback.accept(null, e);
                 return;
             }
-            var payload = new WhisperRequest();
-            payload.audio = Base64.encodeToString(audio, Base64.NO_WRAP);
-            payload.vadFilter = true;
+
+            // Формируем структуру запроса к Google Gemini API
+            var payload = new GeminiRequest();
+            var content = new GeminiRequest.Content();
+            content.parts = new ArrayList<>();
+
+            var audioPart = new GeminiRequest.Part();
+            audioPart.inlineData = new GeminiRequest.InlineData();
+            audioPart.inlineData.mimeType = mimeType;
+            audioPart.inlineData.data = Base64.encodeToString(audio, Base64.NO_WRAP);
+            content.parts.add(audioPart);
+
+            var textPart = new GeminiRequest.Part();
+            textPart.text = "Strictly transcribe this audio message verbatim. Do not add any commentary, notes, thoughts, or formatting. Output ONLY the raw transcribed text in the original language.";
+            content.parts.add(textPart);
+
+            payload.contents = Collections.singletonList(content);
+
             var client = getOkHttpClient();
+            var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + NekoConfig.cfApiToken;
+
             var request = new Request.Builder()
-                    .url("https://api.cloudflare.com/client/v4/accounts/" + NekoConfig.cfAccountID + "/ai/run/@cf/openai/whisper-large-v3-turbo")
-                    .header("Authorization", "Bearer " + NekoConfig.cfApiToken)
+                    .url(url)
                     .post(RequestBody.create(gson.toJson(payload), MediaType.get("application/json")));
+
             try (var response = client.newCall(request.build()).execute()) {
                 var body = response.body().string();
-                var whisperResponse = gson.fromJson(body, WhisperResponse.class);
-                if (whisperResponse.success && whisperResponse.result != null) {
-                    callback.accept(whisperResponse.result.text, null);
+                var geminiResponse = gson.fromJson(body, GeminiResponse.class);
+
+                if (geminiResponse != null && geminiResponse.candidates != null && !geminiResponse.candidates.isEmpty()) {
+                    var candidate = geminiResponse.candidates.get(0);
+                    if (candidate.content != null && candidate.content.parts != null && !candidate.content.parts.isEmpty()) {
+                        var transcribedText = candidate.content.parts.get(0).text;
+                        callback.accept(transcribedText != null ? transcribedText.trim() : "", null);
+                        return;
+                    }
+                }
+
+                if (geminiResponse != null && geminiResponse.error != null) {
+                    callback.accept(null, new Exception("Gemini Error: " + geminiResponse.error.message));
                 } else {
-                    var errors = whisperResponse.errors;
-                    callback.accept(null, new Exception(errors.size() == 1 ? errors.get(0).message : errors.toString()));
+                    callback.accept(null, new Exception("Failed to transcribe audio (Empty response from Gemini)"));
                 }
             } catch (Exception e) {
                 callback.accept(null, e);
@@ -274,42 +273,70 @@ public class WhisperHelper {
         });
     }
 
-    public static class WhisperRequest {
-        @SerializedName("audio")
+    // Модели данных для Google Gemini API
+    public static class GeminiRequest {
+        @SerializedName("contents")
         @Expose
-        public String audio;
-        @SerializedName("vad_filter")
-        @Expose
-        public Boolean vadFilter;
+        public List<Content> contents;
+
+        public static class Content {
+            @SerializedName("parts")
+            @Expose
+            public List<Part> parts;
+        }
+
+        public static class Part {
+            @SerializedName("text")
+            @Expose
+            public String text;
+
+            @SerializedName("inline_data")
+            @Expose
+            public InlineData inlineData;
+        }
+
+        public static class InlineData {
+            @SerializedName("mime_type")
+            @Expose
+            public String mimeType;
+
+            @SerializedName("data")
+            @Expose
+            public String data;
+        }
     }
 
-    public static class Result {
-        @SerializedName("text")
+    public static class GeminiResponse {
+        @SerializedName("candidates")
         @Expose
-        public String text;
-    }
+        public List<Candidate> candidates;
 
-    public static class WhisperResponse {
-        @SerializedName("result")
+        @SerializedName("error")
         @Expose
-        public Result result;
-        @SerializedName("success")
-        @Expose
-        public Boolean success;
-        @SerializedName("errors")
-        @Expose
-        public List<Error> errors;
-    }
+        public GeminiError error;
 
-    public static class Error {
-        @SerializedName("message")
-        @Expose
-        public String message;
+        public static class Candidate {
+            @SerializedName("content")
+            @Expose
+            public GeminiContent content;
+        }
 
-        @NonNull
-        @Override
-        public String toString() {
-            return message;
+        public static class GeminiContent {
+            @SerializedName("parts")
+            @Expose
+            public List<GeminiPart> parts;
+        }
+
+        public static class GeminiPart {
+            @SerializedName("text")
+            @Expose
+            public String text;
+        }
+
+        public static class GeminiError {
+            @SerializedName("message")
+            @Expose
+            public String message;
         }
     }
 }
