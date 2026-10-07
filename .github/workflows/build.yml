@@ -96,8 +96,9 @@ jobs:
           if-no-files-found: warn
       - name: Send Discord Notification
         if: always()
-        uses: IlshatR/discord-webhook-action@v1.2.3
-        with:
-          url: ${{ secrets.DISCORD_WEBHOOK }}
-          color: ${{ job.status == 'success' && 3066993 || 15158332 }}
-          title: "${{ job.status }}"
+        run: |
+          COLOR=${{ job.status == 'success' && 3066993 || 15158332 }}
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d "{\"embeds\": [{\"title\": \"Bebegram Build: ${{ job.status }}\", \"color\": $COLOR}]}" \
+               "${{ secrets.DISCORD_WEBHOOK }}"
