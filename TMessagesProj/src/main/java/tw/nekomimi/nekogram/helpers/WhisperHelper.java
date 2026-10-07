@@ -237,10 +237,16 @@ public class WhisperHelper {
             content.parts.add(audioPart);
 
             var textPart = new GeminiRequest.Part();
-            textPart.text = "Strictly transcribe this audio message verbatim. Do not add any commentary, notes, thoughts, or formatting. Output ONLY the raw transcribed text in the original language.";
+            textPart.text = "Сделай точную транскрипцию этого голосового сообщения на языке оригинала (русский или украинский). Не переводи на другие языки! Выведи только распознанный текст без кавычек, вводных слов и комментариев.";
             content.parts.add(textPart);
 
             payload.contents = Collections.singletonList(content);
+
+            // Отключаем размышления и фантазии ради мгновенной скорости (1-2 сек)
+            payload.generationConfig = new GeminiRequest.GenerationConfig();
+            payload.generationConfig.temperature = 0.0;
+            payload.generationConfig.thinkingConfig = new GeminiRequest.ThinkingConfig();
+            payload.generationConfig.thinkingConfig.thinkingBudget = 0;
 
             var client = getOkHttpClient();
             var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + NekoConfig.cfApiToken;
@@ -273,11 +279,31 @@ public class WhisperHelper {
         });
     }
 
-    // Модели данных для Google Gemini API
+   // Модели данных для Google Gemini API
     public static class GeminiRequest {
         @SerializedName("contents")
         @Expose
         public List<Content> contents;
+
+        @SerializedName("generationConfig")
+        @Expose
+        public GenerationConfig generationConfig;
+
+        public static class GenerationConfig {
+            @SerializedName("temperature")
+            @Expose
+            public Double temperature = 0.0;
+
+            @SerializedName("thinkingConfig")
+            @Expose
+            public ThinkingConfig thinkingConfig;
+        }
+
+        public static class ThinkingConfig {
+            @SerializedName("thinkingBudget")
+            @Expose
+            public Integer thinkingBudget = 0;
+        }
 
         public static class Content {
             @SerializedName("parts")
