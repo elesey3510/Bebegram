@@ -243,7 +243,7 @@ public class WhisperHelper {
             payload.contents = Collections.singletonList(content);
 
             var client = getOkHttpClient();
-            var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=" + NekoConfig.cfApiToken;
+            var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=" + NekoConfig.cfApiToken;
 
             var request = new Request.Builder()
                     .url(url)
